@@ -6,7 +6,6 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-// #include "vm.c"
 
 struct {
   struct spinlock lock;
@@ -532,29 +531,6 @@ procdump(void)
     }
     cprintf("\n");
   }
-}
-
-int procState(){
-	struct proc *p;
- 	sti(); // enables interupts on this processor.
-
-	acquire(&ptable.lock); // enabling Lock
-
-	cprintf("Name \t State \t \t ID \t Memory \t \n");
-
-	// to display the output
-	for ( p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-		if( p -> state == SLEEPING) { cprintf("%s \t SLEEPING \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
-   		else if( p -> state == RUNNABLE) { cprintf("%s \t RUNNABLE \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
-		else if( p -> state == RUNNING) { cprintf("%s \t RUNNING \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
-//		else if( p -> state == UNUSED) { cprintf("%s \t UNUSED \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
-		else if( p -> state == EMBRYO) { cprintf("%s \t EMBRYO \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
-		else if( p -> state == ZOMBIE) { cprintf("%s \t ZOMBIE \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
- }
- 
- release(&ptable.lock);// releasing the Lock 
- return 22;
-
 }
 
 pde_t* getPagedir(void)

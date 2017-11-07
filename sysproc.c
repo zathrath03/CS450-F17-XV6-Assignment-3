@@ -89,11 +89,6 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
-
-int sys_procState(void){
- 
-	return procState ();
-} 
  
 int sys_uv2p(void){
 

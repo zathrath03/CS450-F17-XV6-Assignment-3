@@ -132,7 +132,6 @@ void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
 void            pushcli(void);
 void            popcli(void);
-int 		procState(void);
 
 // sleeplock.c
 void            acquiresleep(struct sleeplock*);
