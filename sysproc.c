@@ -89,3 +89,19 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+int sys_procState(void){
+ 
+	return procState ();
+} 
+ 
+int sys_uv2p(void){
+
+  void *va;
+
+  if(argptr(0, (void*)&va, sizeof(*va)) < 0)
+    return -1;
+  
+	return uv2p(va);
+
+}

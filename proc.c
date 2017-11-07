@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+// #include "vm.c"
 
 struct {
   struct spinlock lock;
@@ -531,4 +532,60 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+int procState(){
+	struct proc *p;
+ 	sti(); // enables interupts on this processor.
+
+	acquire(&ptable.lock); // enabling Lock
+
+	cprintf("Name \t State \t \t ID \t Memory \t \n");
+
+	// to display the output
+	for ( p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+		if( p -> state == SLEEPING) { cprintf("%s \t SLEEPING \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
+   		else if( p -> state == RUNNABLE) { cprintf("%s \t RUNNABLE \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
+		else if( p -> state == RUNNING) { cprintf("%s \t RUNNING \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
+//		else if( p -> state == UNUSED) { cprintf("%s \t UNUSED \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
+		else if( p -> state == EMBRYO) { cprintf("%s \t EMBRYO \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
+		else if( p -> state == ZOMBIE) { cprintf("%s \t ZOMBIE \t %d \t %d \t \n", p -> name, p -> pid, p -> sz); } 
+ }
+ 
+ release(&ptable.lock);// releasing the Lock 
+ return 22;
+
+}
+
+pde_t* getPagedir(void)
+{
+	pde_t* pageDirectory;
+	asm("\t movl %%cr3, %0" : "=r" (pageDirectory) );
+	return pageDirectory;
+}
+
+int uv2p(void *va)
+{
+ 	pde_t myVal = (int)va;
+	pde_t *ptrVal = &myVal;
+	pde_t virtualAddr = (int)ptrVal;
+	cprintf("Virtual Address: %x\n", virtualAddr);
+	int offset = ((virtualAddr) &0xFFF);
+	cprintf("Offset: %x\n", offset);
+    	pde_t *pageDir = getPagedir();
+	cprintf("Page Directory physical addr: %p\n",pageDir); 
+	pde_t temp =(pde_t) pageDir + (4*(PDX(ptrVal)));
+	temp = V2P_WO(temp);
+	cprintf("Value of Base + Directory: %x\n", temp);
+	pde_t* pageDirPtrVal = (pde_t*) temp;
+	pde_t pageDirVal = PTE_ADDR(*pageDirPtrVal);
+	cprintf("Vale of Page table Base: %p\n", pageDirVal);
+	temp = pageDirVal + (4*(PTX(ptrVal)));
+  	temp = V2P_WO(temp);
+	cprintf("Value of Page base + table: %x\n", temp);
+	pde_t *pageTablePtrVal = (pde_t*) temp;
+	pde_t pageTableVal = PTE_ADDR(*pageTablePtrVal);
+	pde_t physicalAddr = pageTableVal|offset;
+	cprintf("VA to PA, Physical addr: %x\n", physicalAddr);
+  return 23;
 }
