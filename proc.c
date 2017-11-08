@@ -532,36 +532,42 @@ procdump(void)
     cprintf("\n");
   }
 }
-
+// John &Navjot added getPagedir to get the value of %cr3 register
 pde_t* getPagedir(void)
 {
 	pde_t* pageDirectory;
 	asm("\t movl %%cr3, %0" : "=r" (pageDirectory) );
 	return pageDirectory;
 }
-
+// John & Navjot added code to implement uv2p(*p) system call
 int uv2p(void *va)
 {
- 	pde_t myVal = (int)va;
-	pde_t *ptrVal = &myVal;
-	pde_t virtualAddr = (int)ptrVal;
-	cprintf("Virtual Address: %x\n", virtualAddr);
-	int offset = ((virtualAddr) &0xFFF);
-	cprintf("Offset: %x\n", offset);
-    	pde_t *pageDir = getPagedir();
-	cprintf("Page Directory physical addr: %p\n",pageDir); 
+	//Getting value of the pointer from the main function in uv2pTest.c
+	pde_t *ptrVal = va;
+	cprintf("va value= 0x%p\n", ptrVal);
+	pde_t virtualAddr = (uint)ptrVal; // getting virtual address
+	int offset = ((virtualAddr) &0xFFF); // setting the offset
+	pde_t *pageDir = getPagedir(); 
 	pde_t temp =(pde_t) pageDir + (4*(PDX(ptrVal)));
-	temp = V2P_WO(temp);
-	cprintf("Value of Base + Directory: %x\n", temp);
+	temp = V2P_WO(temp); // Value of Base + Directory
 	pde_t* pageDirPtrVal = (pde_t*) temp;
-	pde_t pageDirVal = PTE_ADDR(*pageDirPtrVal);
-	cprintf("Vale of Page table Base: %p\n", pageDirVal);
+	int pBit = *pageDirPtrVal & PTE_P; // For testing Present Bit in PDE
+	int uBit = *pageDirPtrVal & PTE_U >> 2; // For testing U- Bit in PDE
+	if (pBit != 1 || uBit != 1){
+		cprintf("invalid bit in PDE");
+		return -1;
+	}
+	pde_t pageDirVal = PTE_ADDR(*pageDirPtrVal); // Value of Page table Base
 	temp = pageDirVal + (4*(PTX(ptrVal)));
-  	temp = V2P_WO(temp);
-	cprintf("Value of Page base + table: %x\n", temp);
+	temp = V2P_WO(temp); // Value of Page base + table
 	pde_t *pageTablePtrVal = (pde_t*) temp;
-	pde_t pageTableVal = PTE_ADDR(*pageTablePtrVal);
-	pde_t physicalAddr = pageTableVal|offset;
-	cprintf("VA to PA, Physical addr: %x\n", physicalAddr);
-  return 23;
+	pBit = *pageTablePtrVal & PTE_P; 	// For testing Present Bit in PTE
+	uBit = *pageTablePtrVal & PTE_U >> 2; // For testing U- Bit in PTE
+	if (pBit != 1 || uBit != 1){
+		cprintf("invalid bit in PTE");
+		return -1;
+	}
+	pde_t pageTableVal = PTE_ADDR(*pageTablePtrVal); // Value of page table entry
+	pde_t physicalAddr = pageTableVal|offset; // Physical address found
+	return physicalAddr;
 }

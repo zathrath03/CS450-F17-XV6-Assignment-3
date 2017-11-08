@@ -93,10 +93,8 @@ sys_uptime(void)
 int sys_uv2p(void){
 
   void *va;
-
-  if(argptr(0, (void*)&va, sizeof(*va)) < 0)
-    return -1;
-  
+  if(argptr(0, (void*)&va, sizeof(*va)) < 0){
+    cprintf("invalid argument\n");
+    return -1;}  
 	return uv2p(va);
-
 }
