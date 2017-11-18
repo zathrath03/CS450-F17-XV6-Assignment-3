@@ -624,7 +624,7 @@ namex(char *path, int parent, char *name)
   }
   return ip;
 }
-
+//testing GIT
 struct inode*
 namei(char *path)
 {
