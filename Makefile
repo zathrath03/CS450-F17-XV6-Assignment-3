@@ -109,6 +109,7 @@ UPROGS=\
 	_sh\
 	_usertests\
 	_wc\
+	_fsTest\
 	_zombie\
 
 fs.img: mkfs README $(UPROGS)
@@ -152,7 +153,7 @@ qemutty: fs.img xv6.img
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c\
 	kill.c ln.c ls.c mkdir.c rm.c usertests.c wc.c zombie.c\
-	printf.c umalloc.c \
+	printf.c umalloc.c fsTest.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 
 dist:
